@@ -1,0 +1,9 @@
+<?php
+
+$host_koneksi = "localhost";
+$username_koneksi = "root";
+$password_koneksi = "";
+$database_name = "db_terbaru_annisa";
+
+$config = mysqli_connect($host_koneksi, $username_koneksi, $password_koneksi, $database_name);
+if (!$config) echo "Koneksi Gagal";

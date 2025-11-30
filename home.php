@@ -1,0 +1,174 @@
+<?php
+session_start();
+ob_start();
+include 'inc/functions.php';
+include 'config/config.php';
+
+checkLogin();
+
+// login sbg operator, cuma bisa buka menu transaksi
+// operator mencoba ganti dari URL
+
+
+// $currentPage = isset($_GET['page']) ? $_GET['page'] : 'dashboard';
+
+
+// $level_id = $_SESSION['LEVEL_ID'] ?? '' ;
+
+// $query = mysqli_query($config, "SELECT * FROM menus 
+// JOIN level_menus ON level_menus.menu_id = menus.id WHERE level_id = '$level_id' ");
+// $rows = mysqli_fetch_all($query, MYSQLI_ASSOC);
+
+// $allowed_role = false;
+
+// foreach($rows as $row) {
+//   if($row['link'] == $currentPage) {
+//     $allowed_role = true;
+//     break;
+//   }
+// }
+
+// MIDDLEWARE
+
+
+$currentPage = isset($_GET['page']) ? $_GET['page'] : 'dashboard';
+$level_id    = $_SESSION['LEVEL_ID'] ?? '';
+
+$allowed_role = false;
+
+/**
+ * Halaman ekstra yang boleh diakses
+ * meskipun TIDAK ada di tabel menus
+ *
+ * key   = level_id
+ * value = array daftar page
+ */
+$extraAccess = [
+  
+  3 => ['tambah-report'], // 3 = Pimpinan
+  1 => ['add-role-menu', 'tambah-report', 'tambah-service', 'tambah-level', 'tambah-customer','tambah-menu', 'tambah-user','tambah-tax'], // 1 = Admin
+  2 => ['tambah-report']
+
+];
+
+if (isset($extraAccess[$level_id]) && in_array($currentPage, $extraAccess[$level_id])) {
+    // kalau dia ada di daftar "akses ekstra", langsung lolos
+    $allowed_role = true;
+} else {
+    // selain itu, cek seperti biasa ke tabel menus + level_menus
+    $query = mysqli_query($config, "SELECT * FROM menus 
+    JOIN level_menus ON level_menus.menu_id = menus.id WHERE level_id = '$level_id' ");
+    $rows = mysqli_fetch_all($query, MYSQLI_ASSOC);
+
+    foreach ($rows as $row) {
+        if ($row['link'] == $currentPage) {
+            $allowed_role = true;
+            break;
+        }
+    }
+}
+
+
+if (!$allowed_role) {
+  echo "<h1 class='center'>Access Failed!!</h1>";
+  echo "You dont have permission to access this page" . ucfirst($currentPage);
+  echo "<br>";
+  echo "<br>";
+  echo "<a href='home.php?page=dashboard'>Back to Dashboard</a>";
+  exit;
+}
+?>
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta content="width=device-width, initial-scale=1.0" name="viewport">
+
+  <title class="d-print-none">LaundryNow!</title>
+  <meta content="" name="description">
+  <meta content="" name="keywords">
+
+  <!-- Favicons -->
+  <link href="assets/img/favicon.png" rel="icon">
+  <link href="assets/img/apple-touch-icon.png" rel="apple-touch-icon">
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.gstatic.com" rel="preconnect">
+  <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i,700,700i|Nunito:300,300i,400,400i,600,600i,700,700i|Poppins:300,300i,400,400i,500,500i,600,600i,700,700i" rel="stylesheet">
+
+  <!-- Vendor CSS Files -->
+  <link href="assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+  <link href="assets/vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
+  <link href="assets/vendor/boxicons/css/boxicons.min.css" rel="stylesheet">
+  <link href="assets/vendor/quill/quill.snow.css" rel="stylesheet">
+  <link href="assets/vendor/quill/quill.bubble.css" rel="stylesheet">
+  <link href="assets/vendor/remixicon/remixicon.css" rel="stylesheet">
+  <link href="assets/vendor/simple-datatables/style.css" rel="stylesheet">
+
+  <!-- Template Main CSS File -->
+  <link href="assets/css/style.css" rel="stylesheet">
+      <style>
+          @media print {
+      .d-print-none {
+        display: none !important;
+      }
+    }
+    </style>
+  <!-- =======================================================
+  * Template Name: NiceAdmin
+  * Template URL: https://bootstrapmade.com/nice-admin-bootstrap-admin-html-template/
+  * Updated: Apr 20 2024 with Bootstrap v5.3.3
+  * Author: BootstrapMade.com
+  * License: https://bootstrapmade.com/license/
+  ======================================================== -->
+</head>
+
+<body>
+
+  <!-- ======= Header ======= -->
+  <?php include 'inc/header.php' ?>
+  <!-- End Header -->
+
+  <!-- ======= Sidebar ======= -->
+  <?php include 'inc/sidebar.php' ?>
+  <!-- End Sidebar-->
+
+  <main id="main" class="main">
+
+    <?php
+    if (isset($_GET['page'])) {
+      if (file_exists('pages/' . $_GET['page'] . '.php')) {
+        include 'pages/' . $_GET['page'] . '.php';
+      } else {
+        include 'pages/notfound.php';
+      }
+    } else {
+      include 'pages/dashboard.php';
+    }
+    ?>
+
+  </main><!-- End #main -->
+
+  <!-- ======= Footer ======= -->
+  <?php include 'inc/footer.php' ?>
+  <!-- End Footer -->
+
+  <a href="#" class="back-to-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
+
+  <!-- Vendor JS Files -->
+  <script src="assets/vendor/apexcharts/apexcharts.min.js"></script>
+  <script src="assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+  <script src="assets/vendor/chart.js/chart.umd.js"></script>
+  <script src="assets/vendor/echarts/echarts.min.js"></script>
+  <script src="assets/vendor/quill/quill.js"></script>
+  <script src="assets/vendor/simple-datatables/simple-datatables.js"></script>
+  <script src="assets/vendor/tinymce/tinymce.min.js"></script>
+  <script src="assets/vendor/php-email-form/validate.js"></script>
+
+  <!-- Template Main JS File -->
+  <script src="assets/js/main.js"></script>
+
+</body>
+
+</html>
